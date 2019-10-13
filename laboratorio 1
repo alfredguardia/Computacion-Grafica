@@ -1,65 +1,177 @@
 #include <windows.h>
 #include <C:\GLUT\include\GL\glut.h>
+#include <iostream>
 #include <stdlib.h>
-struct casa{
-	int x;
-	int y;
-	int altura;
-	int ancho;
+#include <cmath>
+#include <stdio.h>
+#define PI 3.14159265
+
+using namespace std;
+
+class Punto
+{
+public:
+    float x;
+    float y;
+    Punto();
+    ~Punto();
 };
 
-
-void init(void)
+Punto::~Punto()
 {
-	glClearColor(1.0,1.0,1.0,0.0);
-	glMatrixMode(GL_PROJECTION);
-	gluOrtho2D(0.0,200.0,0.0,200.0);
+
+}
+Punto::Punto()
+{
+
 }
 
-void recta2d(void)
+const int tam=3;
+Punto* lista[tam];
+float a = cos(30*PI/180);
+float b = sin(30*PI/180);
+float M[2][2]= {{a, -1*b},{b,a}};
+float G[2][2]={};
+
+void mostrar(Punto* lista[])
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-	glColor3f(0.0,0.4,0.2);
-	glBegin(GL_LINES);
-	glVertex2i(180,15);
-	glVertex2i(10,145);
-	glEnd();
-	glFlush();
+    for(int i=0;i<tam;i++)
+    {
+        cout<<"Punto "<<i<<": ";
+        cout<<lista[i]->x<<" - "<<lista[i]->y;
+        cout<<endl<<endl;
+    }
+}
+
+void girar(Punto* lista[], float M[2][2] )
+{
+    float aux;
+    float auy;
+    for(int i=0;i<tam;i++)
+    {
+        Punto* nuevo=new Punto;
+        aux=lista[i]->x*M[0][0]+lista[i]->y*M[0][1];
+        auy=lista[i]->x*M[1][0]+lista[i]->y*M[1][1];
+        nuevo->x=aux;
+        nuevo->y=auy;
+        lista[i]=nuevo;
+    }
+}
+
+void mover(Punto* lista[], int muevex, int muevey)
+{
+    float aux;
+    float auy;
+    for(int i=0;i<tam;i++)
+    {
+        Punto* nuevo=new Punto;
+        aux=lista[i]->x+muevex;
+        auy=lista[i]->y+muevey;
+        nuevo->x=aux;
+        nuevo->y=auy;
+        lista[i]=nuevo;
+    }
+}
+
+void escalar(Punto* lista[],int escalado)
+{
+    float aux;
+    float auy;
+    for(int i=0;i<tam;i++)
+    {
+        Punto* nuevo=new Punto;
+        aux=lista[i]->x*escalado;
+        auy=lista[i]->y*escalado;
+        nuevo->x=aux;
+        nuevo->y=auy;
+        lista[i]=nuevo;
+    }
+}
+
+void poligono()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -10.0f);
+    glLineWidth(2.5);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
+    glVertex3f(-20, 0.0, 0.0);
+    glVertex3f(20, 0, 0);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex3f(0.0, -20, 0.0);
+    glVertex3f(0, 20, 0);
+    glEnd();
+    glBegin(GL_LINE_LOOP);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    for(int i=0;i<tam;i++)
+    {
+        glVertex3f(lista[i]->x,lista[i]->y,0);
+    }
+    glEnd();
+    glutSwapBuffers();
 }
 
 
-void poligono(void)
+
+void ejes(GLsizei width, GLsizei height)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
-	glColor3f(0.0,0.4,0.2);
-	//glRotated(20, 0,0,1);
-	//glTranslated(50,100,0);
-	glScaled(2,2,0);
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glVertex2i(30,30);
-    glVertex2i(90,30);
-    glVertex2i(30,30);
-    glVertex2i(30,60);
-    glVertex2i(90,30);
-    glVertex2i(90,60);
-    glVertex2i(30,60);
-    glVertex2i(60,75);
-    glVertex2i(90,60);
-    glVertex2i(60,75);
-	glEnd();
-	glFlush();
+    if (height == 0) height = 1;
+    GLfloat aspect = (GLfloat)width / (GLfloat)height;
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
-int main(int argc, char** argv)
+void grafica()
 {
-	glutInit(&argc,argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-	glutInitWindowPosition(50,100);
-	glutInitWindowSize(600,500);
-	glutCreateWindow("Poligono 2D");
-	init();
-	glutDisplayFunc(poligono);
-	//glutDisplayFunc(recta2d);
-	glutMainLoop();
+    glutInitWindowSize(1000, 1000);
+    glutInitWindowPosition(50, 50);
+    glutCreateWindow("Poligono 2D");
+    glutDisplayFunc(poligono);
+    glutReshapeFunc(ejes);
+    glutMainLoop();
+}
+
+void vertice()
+{
+    cout<<"Ingrese los puntos vertices: "<<endl;
+    for(int i=0;i<tam;i++)
+    {
+        cout<<"Vertice "<<i<<" : "<<endl;
+        Punto* nuevo= new Punto();
+        cout<<"x = "; cin>>nuevo->x;
+        cout<<"y = "; cin>>nuevo->y;
+        lista[i]=nuevo;
+        cout<<endl;
+    }
+}
+
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE);
+    vertice();
+    cout<<"Ingrese el multiplicador a escalar: "<<endl;
+    int esca;
+    cin>>esca;
+    escalar(lista,esca);
+    cout<<endl;
+    cout<<"Ingrese la posicion a mover: "<<endl;
+    int mx, my;
+    cout<<"x= "; cin >> mx;
+    cout<<"y= "; cin >> my;
+    mover(lista,mx,my);
+    char rpt;
+    cout<<endl;
+    cout<<"Desea girar? "; cin>>rpt;
+    if (rpt == 'y' || rpt == 'Y')
+    {
+        girar(lista,M);
+    }
+    grafica();
+    return 0;
 }
